@@ -51721,8 +51721,10 @@ function makeManager(pnpapi, opts) {
   }
   const findApiPathCache = /* @__PURE__ */ new Map();
   function addToCacheAndReturn(start, end, target) {
-    if (target !== null)
+    if (target !== null) {
       target = VirtualFS.resolveVirtual(target);
+      target = opts.fakeFs.realpathSync(target);
+    }
     let curr;
     let next = start;
     do {
