@@ -281,7 +281,14 @@ const SLICES = [
     from: `5b321aa5835f9f4dba6d55553fd559985d44b1a9`,
     to: `c41328460d8dba2fac56c220803c68ca961d7cd5`,
     onto: `ce2e60e4ea15a65992e54a9e8877d16be9d42abb`,
-    range: `>=5.5.2`,
+    range: `>=5.5.2 <5.5.3`,
+  },
+  // https://github.com/zxbodya/TypeScript/tree/yarn/pnp-5.5
+  {
+    from: `0b14a304744f659938c5dc77ea7aae0948476bff`,
+    to: `c07f5ad8d737672b33f9c3c5fd98546d33319377`,
+    onto: `f0e992167440686f948965e5441a918b34251886`,
+    range: `>=5.5.3`,
   },
 ];
 
@@ -389,7 +396,7 @@ async function fetchVersions(range) {
 
 async function cloneRepository() {
   if (!fs.existsSync(TS_REPO))
-    await execFile(`git`, [`clone`, `--filter=tree:0`, `https://github.com/yarnpkg/TypeScript`, TS_REPO]);
+    await execFile(`git`, [`clone`, `--filter=tree:0`, `https://github.com/zxbodya/TypeScript`, TS_REPO]);
 
   try {
     await execFile(`git`, [`cherry-pick`, `--abort`], TS_REPO_SPAWN);

@@ -1,6 +1,6 @@
 diff --git a/lib/tsc.js b/lib/tsc.js
-index e3dc24d79..d287f962a 100644
-semver exclusivity >=5.5.2 <5.5.3
+index 779e380ad..8953aec7d 100644
+semver exclusivity >=5.5.3
 --- a/lib/tsc.js
 +++ b/lib/tsc.js
 @@ -5067,6 +5067,9 @@ var sys = (() => {
@@ -182,7 +182,7 @@ semver exclusivity >=5.5.2 <5.5.3
        allFileNames.set(path, { path: info.getCanonicalFileName(path), isRedirect, isInNodeModules });
        importedFileFromNodeModules = importedFileFromNodeModules || isInNodeModules;
      }
-@@ -44724,7 +44835,41 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
+@@ -44724,7 +44835,42 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
    if (!host.fileExists || !host.readFile) {
      return void 0;
    }
@@ -198,7 +198,8 @@ semver exclusivity >=5.5.2 <5.5.3
 +    }
 +    if (fromLocator && toLocator) {
 +      const fromInfo = pnpApi.getPackageInformation(fromLocator);
-+      if (toLocator.reference === fromInfo.packageDependencies.get(toLocator.name)) {
++      const fromInfoName = fromInfo.packageDependencies.get(toLocator.name);
++      if (toLocator.reference === fromInfoName || fromInfoName && fromInfoName.startsWith("virtual:") && fromInfoName.includes(toLocator.reference)) {
 +        pnpPackageName = toLocator.name;
 +      } else {
 +        for (const [name, reference] of fromInfo.packageDependencies) {
@@ -225,7 +226,7 @@ semver exclusivity >=5.5.2 <5.5.3
    if (!parts) {
      return void 0;
    }
-@@ -44761,14 +44906,16 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
+@@ -44761,14 +44907,16 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
    if (isRedirect && !isPackageRootPath) {
      return void 0;
    }
@@ -249,7 +250,7 @@ semver exclusivity >=5.5.2 <5.5.3
    function tryDirectoryWithPackageJson(packageRootIndex) {
      var _a, _b;
      const packageRootPath = path.substring(0, packageRootIndex);
-@@ -44781,9 +44928,9 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
+@@ -44781,9 +44929,9 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
        const importMode = overrideMode || importingSourceFile.impliedNodeFormat;
        if (getResolvePackageJsonExports(options)) {
          const nodeModulesDirectoryName2 = packageRootPath.substring(parts.topLevelPackageNameIndex + 1);
@@ -261,7 +262,7 @@ semver exclusivity >=5.5.2 <5.5.3
          if (fromExports) {
            return { ...fromExports, verbatimFromExports: true };
          }
-@@ -125757,6 +125904,11 @@ function createWatchProgram(host) {
+@@ -125757,6 +125905,11 @@ function createWatchProgram(host) {
    if (configFileName) {
      configFileWatcher = watchFile2(configFileName, scheduleProgramReload, 2e3 /* High */, watchOptions, WatchType.ConfigFile);
    }
@@ -273,7 +274,7 @@ semver exclusivity >=5.5.2 <5.5.3
    const compilerHost = createCompilerHostFromProgramHost(host, () => compilerOptions, directoryStructureHost);
    setGetSourceFileAsHashVersioned(compilerHost);
    const getNewSourceFile = compilerHost.getSourceFile;
-@@ -125819,6 +125971,10 @@ function createWatchProgram(host) {
+@@ -125819,6 +125972,10 @@ function createWatchProgram(host) {
        configFileWatcher.close();
        configFileWatcher = void 0;
      }
@@ -284,7 +285,7 @@ semver exclusivity >=5.5.2 <5.5.3
      extendedConfigCache == null ? void 0 : extendedConfigCache.clear();
      extendedConfigCache = void 0;
      if (sharedExtendedConfigFileWatchers) {
-@@ -125854,7 +126010,7 @@ function createWatchProgram(host) {
+@@ -125854,7 +126011,7 @@ function createWatchProgram(host) {
    function getCurrentProgram() {
      return builderProgram && builderProgram.getProgramOrUndefined();
    }
@@ -293,7 +294,7 @@ semver exclusivity >=5.5.2 <5.5.3
      writeLog(`Synchronizing program`);
      Debug.assert(compilerOptions);
      Debug.assert(rootFileNames);
-@@ -125866,7 +126022,7 @@ function createWatchProgram(host) {
+@@ -125866,7 +126023,7 @@ function createWatchProgram(host) {
          resolutionCache.onChangesAffectModuleResolution();
        }
      }
@@ -302,7 +303,7 @@ semver exclusivity >=5.5.2 <5.5.3
      const {
        originalReadFile,
        originalFileExists,
-@@ -126074,13 +126230,19 @@ function createWatchProgram(host) {
+@@ -126074,13 +126231,19 @@ function createWatchProgram(host) {
      updateLevel = 2 /* Full */;
      scheduleProgramUpdate();
    }
@@ -323,7 +324,7 @@ semver exclusivity >=5.5.2 <5.5.3
      switch (updateLevel) {
        case 1 /* RootNamesAndUpdate */:
          (_a = perfLogger) == null ? void 0 : _a.logStartUpdateProgram("PartialConfigReload");
-@@ -126090,12 +126252,19 @@ function createWatchProgram(host) {
+@@ -126090,12 +126253,19 @@ function createWatchProgram(host) {
          (_b = perfLogger) == null ? void 0 : _b.logStartUpdateProgram("FullConfigReload");
          reloadConfigFile();
          break;
@@ -347,7 +348,7 @@ semver exclusivity >=5.5.2 <5.5.3
    function reloadFileNamesFromConfigFile() {
 diff --git a/lib/tsserver.js b/lib/tsserver.js
 index 398a3a1ed..8a81feff1 100644
-semver exclusivity >=5.5.2 <5.5.3
+semver exclusivity >=5.5.3
 --- a/lib/tsserver.js
 +++ b/lib/tsserver.js
 @@ -33,6 +33,25 @@ var __reExport = (target, mod, secondTarget) => (__copyProps(target, mod, "defau
@@ -400,7 +401,7 @@ semver exclusivity >=5.5.2 <5.5.3
        this.installer.on("message", (m) => this.handleMessage(m));
 diff --git a/lib/typescript.d.ts b/lib/typescript.d.ts
 index fbb3e4912..e601e3d32 100644
-semver exclusivity >=5.5.2 <5.5.3
+semver exclusivity >=5.5.3
 --- a/lib/typescript.d.ts
 +++ b/lib/typescript.d.ts
 @@ -9350,6 +9350,8 @@ declare namespace ts {
@@ -413,8 +414,8 @@ semver exclusivity >=5.5.2 <5.5.3
      function findConfigFile(searchPath: string, fileExists: (fileName: string) => boolean, configName?: string): string | undefined;
      function resolveTripleslashReference(moduleName: string, containingFile: string): string;
 diff --git a/lib/typescript.js b/lib/typescript.js
-index 714953f46..e30a70401 100644
-semver exclusivity >=5.5.2 <5.5.3
+index 4baad5932..4cf55980c 100644
+semver exclusivity >=5.5.3
 --- a/lib/typescript.js
 +++ b/lib/typescript.js
 @@ -8626,6 +8626,9 @@ var sys = (() => {
@@ -639,7 +640,7 @@ semver exclusivity >=5.5.2 <5.5.3
        allFileNames.set(path, { path: info.getCanonicalFileName(path), isRedirect, isInNodeModules });
        importedFileFromNodeModules = importedFileFromNodeModules || isInNodeModules;
      }
-@@ -49488,7 +49635,41 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
+@@ -49488,7 +49635,42 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
    if (!host.fileExists || !host.readFile) {
      return void 0;
    }
@@ -655,7 +656,8 @@ semver exclusivity >=5.5.2 <5.5.3
 +    }
 +    if (fromLocator && toLocator) {
 +      const fromInfo = pnpApi.getPackageInformation(fromLocator);
-+      if (toLocator.reference === fromInfo.packageDependencies.get(toLocator.name)) {
++      const fromInfoName = fromInfo.packageDependencies.get(toLocator.name);
++      if (toLocator.reference === fromInfoName || fromInfoName && fromInfoName.startsWith("virtual:") && fromInfoName.includes(toLocator.reference)) {
 +        pnpPackageName = toLocator.name;
 +      } else {
 +        for (const [name, reference] of fromInfo.packageDependencies) {
@@ -682,7 +684,7 @@ semver exclusivity >=5.5.2 <5.5.3
    if (!parts) {
      return void 0;
    }
-@@ -49525,14 +49706,16 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
+@@ -49525,14 +49707,16 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
    if (isRedirect && !isPackageRootPath) {
      return void 0;
    }
@@ -706,7 +708,7 @@ semver exclusivity >=5.5.2 <5.5.3
    function tryDirectoryWithPackageJson(packageRootIndex) {
      var _a, _b;
      const packageRootPath = path.substring(0, packageRootIndex);
-@@ -49545,9 +49728,9 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
+@@ -49545,9 +49729,9 @@ function tryGetModuleNameAsNodeModule({ path, isRedirect }, { getCanonicalFileNa
        const importMode = overrideMode || importingSourceFile.impliedNodeFormat;
        if (getResolvePackageJsonExports(options)) {
          const nodeModulesDirectoryName2 = packageRootPath.substring(parts.topLevelPackageNameIndex + 1);
@@ -718,7 +720,7 @@ semver exclusivity >=5.5.2 <5.5.3
          if (fromExports) {
            return { ...fromExports, verbatimFromExports: true };
          }
-@@ -122919,6 +123102,7 @@ var ProgramUpdateLevel = /* @__PURE__ */ ((ProgramUpdateLevel2) => {
+@@ -122919,6 +123103,7 @@ var ProgramUpdateLevel = /* @__PURE__ */ ((ProgramUpdateLevel2) => {
    ProgramUpdateLevel2[ProgramUpdateLevel2["Update"] = 0] = "Update";
    ProgramUpdateLevel2[ProgramUpdateLevel2["RootNamesAndUpdate"] = 1] = "RootNamesAndUpdate";
    ProgramUpdateLevel2[ProgramUpdateLevel2["Full"] = 2] = "Full";
@@ -726,7 +728,7 @@ semver exclusivity >=5.5.2 <5.5.3
    return ProgramUpdateLevel2;
  })(ProgramUpdateLevel || {});
  function updateSharedExtendedConfigFileWatcher(projectPath, options, extendedConfigFilesMap, createExtendedConfigFileWatch, toPath3) {
-@@ -130823,6 +131007,11 @@ function createWatchProgram(host) {
+@@ -130823,6 +131008,11 @@ function createWatchProgram(host) {
    if (configFileName) {
      configFileWatcher = watchFile2(configFileName, scheduleProgramReload, 2e3 /* High */, watchOptions, WatchType.ConfigFile);
    }
@@ -738,7 +740,7 @@ semver exclusivity >=5.5.2 <5.5.3
    const compilerHost = createCompilerHostFromProgramHost(host, () => compilerOptions, directoryStructureHost);
    setGetSourceFileAsHashVersioned(compilerHost);
    const getNewSourceFile = compilerHost.getSourceFile;
-@@ -130885,6 +131074,10 @@ function createWatchProgram(host) {
+@@ -130885,6 +131075,10 @@ function createWatchProgram(host) {
        configFileWatcher.close();
        configFileWatcher = void 0;
      }
@@ -749,7 +751,7 @@ semver exclusivity >=5.5.2 <5.5.3
      extendedConfigCache == null ? void 0 : extendedConfigCache.clear();
      extendedConfigCache = void 0;
      if (sharedExtendedConfigFileWatchers) {
-@@ -130920,7 +131113,7 @@ function createWatchProgram(host) {
+@@ -130920,7 +131114,7 @@ function createWatchProgram(host) {
    function getCurrentProgram() {
      return builderProgram && builderProgram.getProgramOrUndefined();
    }
@@ -758,7 +760,7 @@ semver exclusivity >=5.5.2 <5.5.3
      writeLog(`Synchronizing program`);
      Debug.assert(compilerOptions);
      Debug.assert(rootFileNames);
-@@ -130932,7 +131125,7 @@ function createWatchProgram(host) {
+@@ -130932,7 +131126,7 @@ function createWatchProgram(host) {
          resolutionCache.onChangesAffectModuleResolution();
        }
      }
@@ -767,7 +769,7 @@ semver exclusivity >=5.5.2 <5.5.3
      const {
        originalReadFile,
        originalFileExists,
-@@ -131140,13 +131333,19 @@ function createWatchProgram(host) {
+@@ -131140,13 +131334,19 @@ function createWatchProgram(host) {
      updateLevel = 2 /* Full */;
      scheduleProgramUpdate();
    }
@@ -788,7 +790,7 @@ semver exclusivity >=5.5.2 <5.5.3
      switch (updateLevel) {
        case 1 /* RootNamesAndUpdate */:
          (_a = perfLogger) == null ? void 0 : _a.logStartUpdateProgram("PartialConfigReload");
-@@ -131156,12 +131355,19 @@ function createWatchProgram(host) {
+@@ -131156,12 +131356,19 @@ function createWatchProgram(host) {
          (_b = perfLogger) == null ? void 0 : _b.logStartUpdateProgram("FullConfigReload");
          reloadConfigFile();
          break;
@@ -810,7 +812,7 @@ semver exclusivity >=5.5.2 <5.5.3
      return getCurrentBuilderProgram();
    }
    function reloadFileNamesFromConfigFile() {
-@@ -137947,7 +138153,14 @@ function createPackageJsonImportFilter(fromFile, preferences, host) {
+@@ -137947,7 +138154,14 @@ function createPackageJsonImportFilter(fromFile, preferences, host) {
      return false;
    }
    function getNodeModulesPackageNameFromFileName(importedFileName, moduleSpecifierResolutionHost) {
@@ -826,7 +828,7 @@ semver exclusivity >=5.5.2 <5.5.3
        return void 0;
      }
      const specifier = ts_moduleSpecifiers_exports.getNodeModulesPackageName(
-@@ -138520,6 +138733,9 @@ function isImportableFile(program, from, to, preferences, packageJsonFilter, mod
+@@ -138520,6 +138734,9 @@ function isImportableFile(program, from, to, preferences, packageJsonFilter, mod
    return hasImportablePath;
  }
  function isImportablePath(fromPath, toPath3, getCanonicalFileName, globalCachePath) {
@@ -836,7 +838,7 @@ semver exclusivity >=5.5.2 <5.5.3
    const toNodeModules = forEachAncestorDirectory(toPath3, (ancestor) => getBaseFileName(ancestor) === "node_modules" ? ancestor : void 0);
    const toNodeModulesParent = toNodeModules && getDirectoryPath(getCanonicalFileName(toNodeModules));
    return toNodeModulesParent === void 0 || startsWith(getCanonicalFileName(fromPath), toNodeModulesParent) || !!globalCachePath && startsWith(getCanonicalFileName(globalCachePath), toNodeModulesParent);
-@@ -166819,7 +167035,33 @@ function getCompletionEntriesForNonRelativeModules(fragment, scriptPath, mode, c
+@@ -166819,7 +167036,33 @@ function getCompletionEntriesForNonRelativeModules(fragment, scriptPath, mode, c
            );
          }
        };
@@ -871,7 +873,7 @@ semver exclusivity >=5.5.2 <5.5.3
          const nodeModulesDirectoryLookup = ancestorLookup;
          ancestorLookup = (ancestor) => {
            const components = getPathComponents(fragment);
-@@ -166838,34 +167080,52 @@ function getCompletionEntriesForNonRelativeModules(fragment, scriptPath, mode, c
+@@ -166838,34 +167081,52 @@ function getCompletionEntriesForNonRelativeModules(fragment, scriptPath, mode, c
            const packageDirectory = combinePaths(ancestor, "node_modules", packagePath);
            const packageFile = combinePaths(packageDirectory, "package.json");
            if (tryFileExists(host, packageFile)) {
@@ -944,7 +946,7 @@ semver exclusivity >=5.5.2 <5.5.3
      }
    }
    return arrayFrom(result.values());
-@@ -166996,9 +167256,15 @@ function getCompletionEntriesFromTypings(host, options, scriptPath, fragmentDire
+@@ -166996,9 +167257,15 @@ function getCompletionEntriesFromTypings(host, options, scriptPath, fragmentDire
    for (const root of typeRoots) {
      getCompletionEntriesFromDirectories(root);
    }
@@ -963,7 +965,7 @@ semver exclusivity >=5.5.2 <5.5.3
    }
    return result;
    function getCompletionEntriesFromDirectories(directory) {
-@@ -184315,6 +184581,29 @@ var ConfiguredProject2 = class extends Project3 {
+@@ -184315,6 +184582,29 @@ var ConfiguredProject2 = class extends Project3 {
      return this.projectReferences;
    }
    updateReferences(refs) {
@@ -993,7 +995,7 @@ semver exclusivity >=5.5.2 <5.5.3
      this.projectReferences = refs;
      this.potentialProjectReferences = void 0;
    }
-@@ -185029,6 +185318,7 @@ var _ProjectService = class _ProjectService {
+@@ -185029,6 +185319,7 @@ var _ProjectService = class _ProjectService {
        log,
        getDetailWatchInfo
      );
@@ -1001,7 +1003,7 @@ semver exclusivity >=5.5.2 <5.5.3
      (_a = opts.incrementalVerifier) == null ? void 0 : _a.call(opts, this);
    }
    toPath(fileName) {
-@@ -186911,7 +187201,7 @@ Dynamic files must always be opened with service's current directory or service
+@@ -186911,7 +187202,7 @@ Dynamic files must always be opened with service's current directory or service
      this.performanceEventHandler = performanceEventHandler;
    }
    setHostConfiguration(args) {
@@ -1010,7 +1012,7 @@ semver exclusivity >=5.5.2 <5.5.3
      if (args.file) {
        const info = this.getScriptInfoForNormalizedPath(toNormalizedPath(args.file));
        if (info) {
-@@ -186960,6 +187250,8 @@ Dynamic files must always be opened with service's current directory or service
+@@ -186960,6 +187251,8 @@ Dynamic files must always be opened with service's current directory or service
          this.hostConfiguration.watchOptions = substitution;
          this.hostConfiguration.beforeSubstitution = substitution === watchOptions ? void 0 : watchOptions;
          this.logger.info(`Host watch options changed to ${JSON.stringify(this.hostConfiguration.watchOptions)}, it will be take effect for next watches.`);
@@ -1019,7 +1021,7 @@ semver exclusivity >=5.5.2 <5.5.3
        }
      }
    }
-@@ -187958,6 +188250,29 @@ Dynamic files must always be opened with service's current directory or service
+@@ -187958,6 +188251,29 @@ Dynamic files must always be opened with service's current directory or service
      });
    }
    /** @internal */
