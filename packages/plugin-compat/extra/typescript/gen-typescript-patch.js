@@ -281,7 +281,14 @@ const SLICES = [
     from: `5b321aa5835f9f4dba6d55553fd559985d44b1a9`,
     to: `c41328460d8dba2fac56c220803c68ca961d7cd5`,
     onto: `ce2e60e4ea15a65992e54a9e8877d16be9d42abb`,
-    range: `>=5.5.2 <5.6.0-beta`,
+    range: `>=5.5.2 <5.5.3`,
+  },
+  // https://github.com/zxbodya/TypeScript/tree/yarn/pnp-5.5
+  {
+    from: `0b14a304744f659938c5dc77ea7aae0948476bff`,
+    to: `c07f5ad8d737672b33f9c3c5fd98546d33319377`,
+    onto: `f0e992167440686f948965e5441a918b34251886`,
+    range: `>=5.5.3 < 5.6.0-beta`,
   },
   // https://github.com/yarnpkg/TypeScript/tree/merceyz/pnp-5.6-beta
   {
@@ -291,16 +298,30 @@ const SLICES = [
     range: `>=5.6.0-beta <5.6.1-rc`,
   },
   // https://github.com/yarnpkg/TypeScript/tree/merceyz/pnp-5.6-rc
+  // {
+  //   from: `0102e47303cb33503219740015f711e2fe7d89ab`,
+  //   to: `0102e47303cb33503219740015f711e2fe7d89ab`,
+  //   onto: `6212132b835145b1a8fd49982680ac668caf3ddc`,
+  //   range: `>=5.6.1-rc`,
+  // },
+  // https://github.com/zxbodya/TypeScript/tree/yarn/pnp-5.6-rc
   {
     from: `0102e47303cb33503219740015f711e2fe7d89ab`,
-    to: `0102e47303cb33503219740015f711e2fe7d89ab`,
+    to: `93e14d12155cebe0a1c8159ea3a3597470483f55`,
     onto: `6212132b835145b1a8fd49982680ac668caf3ddc`,
     range: `>=5.6.1-rc <5.7.0-beta`,
   },
   // https://github.com/yarnpkg/TypeScript/tree/merceyz/pnp-5.7-beta
+  // {
+  //   from: `18776a771f795ecc2535ee56705ea9fdb786a569`,
+  //   to: `519971751e31f38542a608abf21ba3d61c5c3f93`,
+  //   onto: `69fb689edbbce517a4615be9d356c6c812639849`,
+  //   range: `>=5.7.0-beta`,
+  // },
+  // https://github.com/zxbodya/TypeScript/tree/yarn/pnp-5.7-beta
   {
     from: `18776a771f795ecc2535ee56705ea9fdb786a569`,
-    to: `519971751e31f38542a608abf21ba3d61c5c3f93`,
+    to: `b598ecefe5a8159481bca83f400581d23c6853ab`,
     onto: `69fb689edbbce517a4615be9d356c6c812639849`,
     range: `>=5.7.0-beta <5.7.1-rc`,
   },
@@ -417,7 +438,7 @@ async function fetchVersions(range) {
 
 async function cloneRepository() {
   if (!fs.existsSync(TS_REPO))
-    await execFile(`git`, [`clone`, `--filter=tree:0`, `https://github.com/yarnpkg/TypeScript`, TS_REPO]);
+    await execFile(`git`, [`clone`, `--filter=tree:0`, `https://github.com/zxbodya/TypeScript`, TS_REPO]);
 
   try {
     await execFile(`git`, [`cherry-pick`, `--abort`], TS_REPO_SPAWN);
