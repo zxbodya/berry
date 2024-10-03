@@ -4,6 +4,7 @@ import {Descriptor, Locator, Package}                                           
 
 import {NpmSemverFetcher}                                                                      from './NpmSemverFetcher';
 import {PROTOCOL}                                                                              from './constants';
+import * as npmConfigUtils                                                                     from './npmConfigUtils';
 import * as npmHttpUtils                                                                       from './npmHttpUtils';
 
 export class NpmTagResolver implements Resolver {
@@ -60,7 +61,8 @@ export class NpmTagResolver implements Resolver {
     if (NpmSemverFetcher.isConventionalTarballUrl(versionLocator, archiveUrl, {configuration: opts.project.configuration})) {
       return [versionLocator];
     } else {
-      return [structUtils.bindLocator(versionLocator, {__archiveUrl: archiveUrl})];
+      const registry = npmConfigUtils.getScopeRegistry(versionLocator.scope, {configuration: opts.project.configuration});
+      return [structUtils.bindLocator(versionLocator, {__archiveUrl: archiveUrl.replace(registry, ``)})];
     }
   }
 
