@@ -327,8 +327,8 @@ const SLICES = [
   },
   // https://github.com/zxbodya/TypeScript/tree/yarn/pnp-5.7-rc
   {
-    from: `b7466ca45d68ffdbf0741acf5b3d2d99c5a17196`, // first commit
-    to: `9017d5206a0a439de0d93ed0b6503146ea0daeea`, // last commit
+    from: `99f3e130bbe02473680bfa040d131c1f7f08fcc0`, // first commit
+    to: `0d5f8d49e649474c737cfade65f1087ddd08519e`, // last commit
     onto: `c1216dea1a504da7b89b5221b925abcd1702d7e4`, // base
     range: `>=5.7.1-rc`,
   },

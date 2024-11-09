@@ -416,7 +416,7 @@ semver exclusivity >=5.7.1-rc
      function findConfigFile(searchPath: string, fileExists: (fileName: string) => boolean, configName?: string): string | undefined;
      function resolveTripleslashReference(moduleName: string, containingFile: string): string;
 diff --git a/lib/typescript.js b/lib/typescript.js
-index 366e30eeb..187eae0dd 100644
+index 366e30eeb..76846224f 100644
 semver exclusivity >=5.7.1-rc
 --- a/lib/typescript.js
 +++ b/lib/typescript.js
@@ -826,47 +826,7 @@ semver exclusivity >=5.7.1-rc
    const toNodeModules = forEachAncestorDirectoryStoppingAtGlobalCache(
      host,
      toPath3,
-@@ -170137,6 +170353,20 @@ function getCompletionEntriesForNonRelativeModules(fragment, scriptPath, mode, p
-         }
-         importsLookup(ancestor);
-       };
-+      const checkExports = (packageFile, packageDirectory, fragmentSubpath) => {
-+        const packageJson = readJson(packageFile, host);
-+        exportsOrImportsLookup(
-+          packageJson.exports,
-+          fragmentSubpath,
-+          packageDirectory,
-+          /*isExports*/
-+          true,
-+          /*isImports*/
-+          false
-+        );
-+        return true;
-+      };
-+      const shouldCheckExports = fragmentDirectory && resolvePackageJsonExports;
-       if (fragmentDirectory && resolvePackageJsonExports) {
-         const nodeModulesDirectoryOrImportsLookup = ancestorLookup;
-         ancestorLookup = (ancestor) => {
-@@ -170159,23 +170389,54 @@ function getCompletionEntriesForNonRelativeModules(fragment, scriptPath, mode, p
-           const packageDirectory = combinePaths(ancestor, "node_modules", packagePath);
-           const packageFile = combinePaths(packageDirectory, "package.json");
-           if (tryFileExists(host, packageFile)) {
--            const packageJson = readJson(packageFile, host);
-             const fragmentSubpath = components.join("/") + (components.length && hasTrailingDirectorySeparator(fragment) ? "/" : "");
--            exportsOrImportsLookup(
--              packageJson.exports,
--              fragmentSubpath,
--              packageDirectory,
--              /*isExports*/
--              true,
--              /*isImports*/
--              false
--            );
--            return;
-+            if (checkExports(packageFile, packageDirectory, fragmentSubpath)) {
-+              return;
-+            }
-           }
+@@ -170175,7 +170391,60 @@ function getCompletionEntriesForNonRelativeModules(fragment, scriptPath, mode, p
            return nodeModulesDirectoryOrImportsLookup(ancestor);
          };
        }
@@ -877,34 +837,48 @@ semver exclusivity >=5.7.1-rc
 +        const dependencyNameMatch = fragment.match(pathRegExp);
 +        if (dependencyNameMatch) {
 +          const [, dependencyName, subPath] = dependencyNameMatch;
-+          let unqualified;
-+          try {
-+            unqualified = pnpApi.resolveToUnqualified(dependencyName, scriptPath, { considerBuiltins: false });
-+          } catch {
-+          }
-+          if (unqualified) {
-+            const packageDirectory = normalizePath(unqualified);
-+            let shouldGetCompletions = true;
-+            if (shouldCheckExports) {
-+              const packageFile = combinePaths(packageDirectory, "package.json");
-+              if (tryFileExists(host, packageFile) && checkExports(packageFile, packageDirectory, subPath)) {
-+                shouldGetCompletions = false;
-+              }
++          if (startsWith(dependencyName, "#")) {
++            forEachAncestorDirectoryStoppingAtGlobalCache(host, scriptPath, ancestorLookup);
++          } else {
++            let unqualified;
++            try {
++              unqualified = pnpApi.resolveToUnqualified(dependencyName, scriptPath, { considerBuiltins: false });
++            } catch {
 +            }
-+            if (shouldGetCompletions) {
-+              getCompletionEntriesForDirectoryFragment(
-+                subPath,
-+                packageDirectory,
-+                extensionOptions,
-+                program,
-+                host,
-+                moduleSpecifierResolutionHost,
-+                /*moduleSpecifierIsRelative*/
-+                false,
-+                /*exclude*/
-+                void 0,
-+                result
-+              );
++            if (unqualified) {
++              const packageDirectory = normalizePath(unqualified);
++              let shouldGetCompletions = true;
++              if (fragmentDirectory && resolvePackageJsonExports) {
++                const packageFile = combinePaths(packageDirectory, "package.json");
++                if (tryFileExists(host, packageFile)) {
++                  const packageJson = readJson(packageFile, host);
++                  exportsOrImportsLookup(
++                    packageJson.exports,
++                    subPath,
++                    packageDirectory,
++                    /*isExports*/
++                    true,
++                    /*isImports*/
++                    false
++                  );
++                  shouldGetCompletions = false;
++                }
++              }
++              if (shouldGetCompletions) {
++                getCompletionEntriesForDirectoryFragment(
++                  subPath,
++                  packageDirectory,
++                  extensionOptions,
++                  program,
++                  host,
++                  moduleSpecifierResolutionHost,
++                  /*moduleSpecifierIsRelative*/
++                  false,
++                  /*exclude*/
++                  void 0,
++                  result
++                );
++              }
 +            }
 +          }
 +        }
@@ -914,7 +888,7 @@ semver exclusivity >=5.7.1-rc
      }
    }
    return arrayFrom(result.values());
-@@ -170372,9 +170633,15 @@ function getCompletionEntriesFromTypings(program, host, moduleSpecifierResolutio
+@@ -170372,9 +170641,15 @@ function getCompletionEntriesFromTypings(program, host, moduleSpecifierResolutio
    for (const root of typeRoots) {
      getCompletionEntriesFromDirectories(root);
    }
@@ -933,7 +907,7 @@ semver exclusivity >=5.7.1-rc
    }
    return result;
    function getCompletionEntriesFromDirectories(directory) {
-@@ -187686,6 +187953,29 @@ var ConfiguredProject2 = class extends Project2 {
+@@ -187686,6 +187961,29 @@ var ConfiguredProject2 = class extends Project2 {
      return this.projectReferences;
    }
    updateReferences(refs) {
@@ -963,7 +937,7 @@ semver exclusivity >=5.7.1-rc
      this.projectReferences = refs;
      this.potentialProjectReferences = void 0;
    }
-@@ -188491,6 +188781,7 @@ var _ProjectService = class _ProjectService {
+@@ -188491,6 +188789,7 @@ var _ProjectService = class _ProjectService {
        getDetailWatchInfo
      );
      this.canUseWatchEvents = getCanUseWatchEvents(this, opts.canUseWatchEvents);
@@ -971,7 +945,7 @@ semver exclusivity >=5.7.1-rc
      (_a = opts.incrementalVerifier) == null ? void 0 : _a.call(opts, this);
    }
    toPath(fileName) {
-@@ -190445,7 +190736,7 @@ Dynamic files must always be opened with service's current directory or service
+@@ -190445,7 +190744,7 @@ Dynamic files must always be opened with service's current directory or service
      this.performanceEventHandler = performanceEventHandler;
    }
    setHostConfiguration(args) {
@@ -980,7 +954,7 @@ semver exclusivity >=5.7.1-rc
      if (args.file) {
        const info = this.getScriptInfoForNormalizedPath(toNormalizedPath(args.file));
        if (info) {
-@@ -190494,6 +190785,8 @@ Dynamic files must always be opened with service's current directory or service
+@@ -190494,6 +190793,8 @@ Dynamic files must always be opened with service's current directory or service
          this.hostConfiguration.watchOptions = substitution;
          this.hostConfiguration.beforeSubstitution = substitution === watchOptions ? void 0 : watchOptions;
          this.logger.info(`Host watch options changed to ${JSON.stringify(this.hostConfiguration.watchOptions)}, it will be take effect for next watches.`);
@@ -989,7 +963,7 @@ semver exclusivity >=5.7.1-rc
        }
      }
    }
-@@ -191689,6 +191982,28 @@ Dynamic files must always be opened with service's current directory or service
+@@ -191689,6 +191990,28 @@ Dynamic files must always be opened with service's current directory or service
        }
      );
    }
